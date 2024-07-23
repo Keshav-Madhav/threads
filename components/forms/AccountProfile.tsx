@@ -17,6 +17,9 @@ import { Input } from "@/components/ui/input"
 import * as z from 'zod';
 import Image from "next/image"
 import { Textarea } from "../ui/textarea"
+import { useState } from "react"
+import { isBase64Image } from "@/lib/utils"
+import { useUploadThing } from "@/lib/uploadThing"
 
 
 type Props = {
@@ -32,22 +35,55 @@ type Props = {
 }
 
 const AccountProfile = ({user, btnTitle}: Props) => {
+  const [files, setFiles] = useState<File[]>([])
+  const { startUpload } = useUploadThing("media")  
+
   const form = useForm({
     resolver: zodResolver(UserValidation),
     defaultValues: {
-      profile_image: '',
-      name: '',
-      username: '',
-      bio: ''
+      profile_image: user.image || "",
+      name: user.name || "",
+      username: user.username || "",
+      bio: user.bio || ""
     }
   })
 
   const onSubmit = async (data: z.infer<typeof UserValidation>) => {
-    console.log(data)
+    const blob = data.profile_image;
+
+    const hasImageChanged = isBase64Image(blob);
+
+    if(hasImageChanged) {
+      const imgRes = await startUpload(files)
+
+      if(imgRes && imgRes[0].url) {
+        data.profile_image = imgRes[0].url;
+      }
+    }
+
+    
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, fieldChange: (value: string) => void) => {
     e.preventDefault();
+
+    const fileReader = new FileReader();
+
+    if(e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      
+      setFiles(Array.from(e.target.files))
+
+      if(!file.type.includes("image")) return;
+
+      fileReader.onload = async(e) => {
+        const image = e.target?.result?.toString() || ''
+
+        fieldChange(image)
+      }
+
+      fileReader.readAsDataURL(file)
+    }
   }
 
   return (
