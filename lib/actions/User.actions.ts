@@ -28,3 +28,15 @@ export async function updateUser(userId:string, username:string, name:string, bi
     throw new Error('Error updating user');
   }
 }
+
+export async function fetchUser(userID:string){
+  try{
+    connectDB();
+
+    return await User.findOne({id:userID})
+    // .populate({path:'communities', modal:Community})
+  }catch(error){
+    console.error('Error creating thread: ', error);
+    throw new Error('Error creating thread');
+  }
+}
