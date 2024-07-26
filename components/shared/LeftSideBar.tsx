@@ -35,7 +35,7 @@ const LeftSideBar = (props: Props) => {
 
       <div className='mt-10 px-6'>
         <SignedIn>
-          <SignOutButton signOutOptions={{redirectUrl: '/sign-in'}}>
+          <SignOutButton signOutOptions={{redirectUrl: '/sign-in'}} redirectUrl='/sign-in'>
             <div className='flex cursor-pointer gap-4 p-4'>
               <Image 
                 src="/logout.svg" 
