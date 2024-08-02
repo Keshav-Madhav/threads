@@ -25,3 +25,28 @@ export async function createThread(text:string, author:string, path:string, comm
     throw new Error('Error creating thread');
   }
 }
+
+export async function getThreads(pageNum = 1, pageSize = 20) {
+  connectDB();
+  
+  const skipAmt = (pageNum - 1) * pageSize;
+
+  const threads = Thread.find({
+    parentID: {$in: [null, '', undefined]},
+  })
+  .sort({createdAt: 'desc'})
+  .skip(skipAmt)
+  .limit(pageSize)
+  .populate({path: 'author', model: User})
+  .populate({path: 'children',populate:{path:'author', model:User, select:"_id name parentID image"}})
+
+  const totalCount = await Thread.countDocuments({
+    parentID: {$in: [null, '', undefined]},
+  })
+
+  const posts = await threads.exec();
+
+  const isNextPage = totalCount > (skipAmt + posts.length);
+
+  return {threads, isNextPage};
+}
