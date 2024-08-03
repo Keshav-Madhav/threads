@@ -26,7 +26,7 @@ export async function updateUser(userId:string, username:string, name:string, bi
       revalidatePath(path);
     }
   } catch (error) {
-    console.error('Error updating user: ', error);
+    console.error(error);
     throw new Error('Error updating user');
   }
 }
@@ -38,7 +38,7 @@ export async function fetchUser(userID:string){
     return await User.findOne({id:userID})
     // .populate({path:'communities', modal:Community})
   }catch(error){
-    console.error('Error creating thread: ', error);
+    console.error(error);
     throw new Error('Error creating thread');
   }
 }
@@ -97,5 +97,25 @@ export async function fetchUsers({
   } catch (error) {
     console.log(error)
     throw new Error('Error fetching users');
+  }
+}
+
+export async function getActivity(userID:string){
+  connectDB();
+
+  try {
+    const threads = await Thread.find({author: userID})
+
+    const childrenThreads = threads.reduce((acc, thread) => {
+      return acc.concat(thread.children)
+    }, [])
+
+    const replies = await Thread.find({_id: {$in: childrenThreads}, author: {$ne: userID}})
+      .populate({path: 'author', model: User, select:'name image _id'})
+
+    return replies;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error fetching activity');
   }
 }
