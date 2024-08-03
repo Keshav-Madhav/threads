@@ -50,3 +50,21 @@ export async function getThreads(pageNum = 1, pageSize = 20) {
 
   return {posts, isNextPage};
 }
+
+export async function fetchThreadByID(id: string) {
+  connectDB();
+
+  try {
+    const thread = await Thread.findById(id)
+    .populate({path: 'author', model: User, select:"_id id name image"})
+    .populate({path: 'children', populate:[
+      {path:'author', model:User, select:"_id name parentID image"},
+      {path:'children', model:Thread, populate:{path:'author', model:User, select:"_id name parentID image"}}
+    ]}).exec();
+
+    return thread;
+  } catch (error) {
+    console.error('Error fetching thread: ', error);
+    throw new Error('Error fetching thread');
+  }
+}
