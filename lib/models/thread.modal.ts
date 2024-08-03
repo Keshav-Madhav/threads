@@ -13,10 +13,12 @@ const threadSchema = new mongoose.Schema({
   },
   CreatedAt: { type: Date, default: Date.now },
   ParentID: {type: String},
-  children:{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Thread",  
-  }
+  children: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Thread"
+    } 
+  ]
 });
 
 const Thread = mongoose.models.Thread || mongoose.model("Thread", threadSchema); 

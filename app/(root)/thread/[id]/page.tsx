@@ -1,4 +1,5 @@
 import ThreadCard from "@/components/card/ThreadCard"
+import Comment from "@/components/forms/Comment"
 import { fetchThreadByID } from "@/lib/actions/Thread.actions"
 import { fetchUser } from "@/lib/actions/User.actions"
 import { currentUser } from "@clerk/nextjs/server"
@@ -30,6 +31,31 @@ const page = async ({ params }: { params:{id:string} }) => {
           community={thread.community}
           comments={thread.children}
         />
+      </div>
+
+      <div className="mt-7 ">
+        <Comment 
+          threadId={thread._id}
+          userImage={userInfo.image}
+          userId={JSON.stringify(userInfo._id)}
+        />
+      </div>
+
+      <div className="mt-10 flex flex-col gap-2.5">
+        {thread .children.map((comment:any) => (
+          <ThreadCard
+            key={comment._id}
+            id={comment._id}
+            userID={user?.id || ''}
+            parentID={comment.parentID}
+            content={comment.text}
+            author={comment.author}
+            createdAt={comment.createdAt}
+            community={comment.community}
+            comments={comment.children}
+            isComment
+          />
+        ))}
       </div>
     </section>
   )
