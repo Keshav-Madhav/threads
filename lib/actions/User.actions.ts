@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import User from "../models/user.model";
 import { connectDB } from "../mongoose"
 import Thread from "../models/thread.modal";
+import { FilterQuery, SortOrder } from "mongoose";
 
 export async function updateUser(userId:string, username:string, name:string, bio:string, image:string, path:string): Promise<void> {
   connectDB();
@@ -55,4 +56,46 @@ export async function fetchUserPosts(userID:string){
     throw new Error('Error fetching user posts');
   }
 
+}
+
+export async function fetchUsers({
+  userId,
+  search = '',
+  pageNumber = 1,
+  pageSize = 20,
+  sortBy = 'desc',
+}: {userId: string; search?: string; pageNumber?: number; pageSize?: number; sortBy?: SortOrder;}){
+  connectDB();
+
+  try {
+    const skipAmount = (pageNumber - 1) *  pageSize;
+
+    const userRegex = new RegExp(search, 'i');
+
+    const query: FilterQuery<typeof User> = {
+      id: { $ne: userId },
+    }
+
+    if(search.trim() !== ''){
+      query.$or = [
+        {username: {$regex: userRegex}},
+        {name: {$regex: userRegex}},
+      ]
+    }
+
+    const sortOptions = {CreatedAt: sortBy}
+
+    const usersQuery = User.find(query).sort(sortOptions).skip(skipAmount).limit(pageSize);
+
+    const totalCount = await User.countDocuments(query);
+
+    const users = await usersQuery.exec();
+
+    const isNext = totalCount > skipAmount + users.length;
+
+    return {users, isNext, totalCount};
+  } catch (error) {
+    console.log(error)
+    throw new Error('Error fetching users');
+  }
 }
