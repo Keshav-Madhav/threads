@@ -48,5 +48,5 @@ export async function getThreads(pageNum = 1, pageSize = 20) {
 
   const isNextPage = totalCount > (skipAmt + posts.length);
 
-  return {threads, isNextPage};
+  return {posts, isNextPage};
 }
