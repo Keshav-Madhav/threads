@@ -5,8 +5,6 @@ import { fetchUser } from "@/lib/actions/User.actions"
 import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 
-type Props = {}
-
 const page = async ({ params }: { params:{id:string} }) => {
   if (!params) return null
   const user = await currentUser();
