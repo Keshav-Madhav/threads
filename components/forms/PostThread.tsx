@@ -16,6 +16,7 @@ import { Textarea } from "../ui/textarea"
 import { usePathname, useRouter } from "next/navigation"
 import { ThreadValidation } from "@/lib/validations/thread"
 import { createThread } from "@/lib/actions/Thread.actions"
+import { useOrganization } from "@clerk/nextjs"
 
 
 type Props = {
@@ -25,6 +26,7 @@ type Props = {
 const PostThread = ({ userID }: Props) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { organization } = useOrganization();
   
   const form = useForm({
     resolver: zodResolver(ThreadValidation),
@@ -35,11 +37,12 @@ const PostThread = ({ userID }: Props) => {
   })
 
   const onSubmit = async (data: z.infer<typeof ThreadValidation>) => {
+    console.log(organization)
     await createThread(
       data.thread,
       data.accountID,
       pathname,
-      null
+      organization?.id || null,
     );
 
     router.push("/");

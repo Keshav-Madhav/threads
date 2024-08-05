@@ -5,6 +5,7 @@ import User from "../models/user.model";
 import { connectDB } from "../mongoose"
 import Thread from "../models/thread.modal";
 import { FilterQuery, SortOrder } from "mongoose";
+import Community from "../models/community.model";
 
 export async function updateUser(userId:string, username:string, name:string, bio:string, image:string, path:string): Promise<void> {
   connectDB();
@@ -48,7 +49,10 @@ export async function fetchUserPosts(userID:string){
   
   try {
     const threads = await User.findOne({ id: userID })
-      .populate({ path: 'threads', model: Thread, populate:{ path: 'children', model: Thread, populate: { path: 'author', model: User, select:{path:'author', model: User, select:'name image id'}}} })
+      .populate({ path: 'threads', model: Thread, populate:[
+        { path: "community", model: Community, select: "name id image _id", },
+        { path: 'children', model: Thread, populate: { path: 'author', model: User, select:'name image id'}}
+      ] })
 
     return threads;
   } catch (error) {
